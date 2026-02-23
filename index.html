@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SAHABAT KOAT - Sistem Database Terpusat</title>
+    
+    <!-- Library Eksternal -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <!-- Memuat Lucide lebih awal di head -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
@@ -16,7 +18,18 @@
         .card-gradient-blue { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
         .card-gradient-purple { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
         .modal-overlay { background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
-        @media print { .no-print { display: none; } }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        @media print { 
+            .no-print { display: none !important; } 
+            .print-only { display: block !important; }
+            body { background: white; }
+        }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden">
@@ -30,7 +43,7 @@
             <h1 class="text-xl font-bold tracking-tight">SAHABAT KOAT</h1>
         </div>
         
-        <nav class="flex-1 mt-6 px-4 space-y-2">
+        <nav class="flex-1 mt-6 px-4 space-y-2 overflow-y-auto">
             <button onclick="switchPage('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-4 py-3 rounded-xl transition hover:bg-slate-800 text-slate-300">
                 <i data-lucide="layout-dashboard" class="w-5 h-5 mr-3"></i> Dashboard
             </button>
@@ -52,8 +65,8 @@
 
         <div class="p-4 border-t border-slate-800">
             <div class="flex items-center space-x-3 p-3 bg-slate-800 rounded-xl">
-                <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center font-bold text-white">SA</div>
-                <div>
+                <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center font-bold text-white uppercase" id="user-initial">SA</div>
+                <div class="overflow-hidden text-ellipsis whitespace-nowrap">
                     <p class="text-sm font-medium">Super Admin</p>
                     <p class="text-xs text-slate-400">Pusat KOAT</p>
                 </div>
@@ -68,19 +81,20 @@
             <h2 id="page-title" class="text-xl font-semibold text-slate-800">Dashboard</h2>
             <div class="flex items-center space-x-4">
                 <span class="text-sm text-slate-500" id="current-date"></span>
-                <button class="p-2 text-slate-400 hover:text-slate-600 transition">
+                <div class="h-8 w-px bg-slate-200 mx-2"></div>
+                <button class="p-2 text-slate-400 hover:text-blue-600 transition relative">
                     <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
                 </button>
             </div>
         </header>
 
         <!-- Content Area -->
-        <div id="content-container" class="flex-1 overflow-y-auto p-8">
+        <div id="content-container" class="flex-1 overflow-y-auto p-4 md:p-8">
             
             <!-- PAGE: DASHBOARD -->
             <section id="page-dashboard" class="space-y-8">
-                <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border flex items-center space-x-4">
                         <div class="p-4 bg-blue-100 text-blue-600 rounded-xl"><i data-lucide="users" class="w-6 h-6"></i></div>
                         <div>
@@ -111,59 +125,68 @@
                     </div>
                 </div>
 
-                <!-- Charts & Activity -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border">
-                        <h4 class="font-bold text-slate-800 mb-6">Grafik Pertumbuhan Anggota</h4>
-                        <canvas id="growthChart" height="200"></canvas>
+                        <h4 class="font-bold text-slate-800 mb-6 flex items-center">
+                            <i data-lucide="trending-up" class="w-5 h-5 mr-2 text-blue-600"></i>
+                            Pertumbuhan Anggota
+                        </h4>
+                        <div class="relative h-[300px]">
+                            <canvas id="growthChart"></canvas>
+                        </div>
                     </div>
                     <div class="bg-white p-6 rounded-2xl shadow-sm border">
-                        <h4 class="font-bold text-slate-800 mb-6">Aktivitas Terakhir</h4>
-                        <div class="space-y-4" id="recent-activity">
-                            <!-- JS will populate -->
+                        <h4 class="font-bold text-slate-800 mb-6 flex items-center">
+                            <i data-lucide="history" class="w-5 h-5 mr-2 text-blue-600"></i>
+                            Aktivitas Terakhir
+                        </h4>
+                        <div class="space-y-6" id="recent-activity">
+                            <!-- JS Populate -->
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- PAGE: ANGGOTA (Reusable for Sabangka & Poem) -->
+            <!-- PAGE: MEMBERS -->
             <section id="page-members" class="hidden space-y-6">
-                <div class="flex justify-between items-center">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h3 class="text-2xl font-bold text-slate-800" id="member-title">Data Anggota</h3>
                         <p class="text-slate-500">Kelola informasi anggota dan ID Digital.</p>
                     </div>
-                    <div class="flex space-x-3">
-                        <button class="bg-white border text-slate-700 px-4 py-2 rounded-xl hover:bg-slate-50 transition flex items-center">
+                    <div class="flex space-x-3 w-full md:w-auto">
+                        <button class="flex-1 md:flex-none bg-white border text-slate-700 px-4 py-2 rounded-xl hover:bg-slate-50 transition flex items-center justify-center">
                             <i data-lucide="download" class="w-4 h-4 mr-2"></i> Export
                         </button>
-                        <button onclick="openAddMemberModal()" class="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition flex items-center">
-                            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Tambah Anggota
+                        <button onclick="openAddMemberModal()" class="flex-1 md:flex-none bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition flex items-center justify-center">
+                            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Tambah
                         </button>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
-                    <div class="p-4 border-b bg-slate-50 flex items-center justify-between">
-                        <div class="relative w-64">
-                            <input type="text" placeholder="Cari anggota..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    <div class="p-4 border-b bg-slate-50 flex items-center">
+                        <div class="relative w-full max-w-md">
+                            <input type="text" placeholder="Cari nama atau no registrasi..." class="w-full pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
                             <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
                         </div>
                     </div>
-                    <table class="w-full text-left">
-                        <thead class="bg-slate-50 border-b">
-                            <tr>
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">ID / No Reg</th>
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Nama Lengkap</th>
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Status</th>
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Bergabung</th>
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="member-table-body">
-                            <!-- JS Content -->
-                        </tbody>
-                    </table>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 border-b">
+                                <tr>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">ID / Registrasi</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Lengkap</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Bergabung</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="member-table-body" class="divide-y">
+                                <!-- JS Content -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
@@ -184,46 +207,58 @@
             <section id="page-sertifikat" class="hidden space-y-6">
                 <div class="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-sm border">
                     <div class="text-center mb-10">
+                        <div class="inline-block p-3 bg-blue-50 text-blue-600 rounded-2xl mb-4">
+                            <i data-lucide="qr-code" class="w-8 h-8"></i>
+                        </div>
                         <h3 class="text-2xl font-bold text-slate-800">Generator QR Sertifikat</h3>
                         <p class="text-slate-500">Buat validasi resmi untuk sertifikat KOAT</p>
                     </div>
                     
-                    <form id="cert-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <form id="cert-form" class="grid grid-cols-1 md:grid-cols-2 gap-6" onsubmit="event.preventDefault(); generateCertQR();">
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold">No Registrasi Sertifikat</label>
-                            <input type="text" id="cert-reg" placeholder="Contoh: CERT/KOAT/2023/001" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="text-sm font-semibold text-slate-700">No Registrasi Sertifikat</label>
+                            <input type="text" id="cert-reg" required placeholder="Contoh: CERT/KOAT/2023/001" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition">
                         </div>
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold">Nama Penerima</label>
-                            <input type="text" id="cert-name" placeholder="Nama Lengkap" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="text-sm font-semibold text-slate-700">Nama Penerima</label>
+                            <input type="text" id="cert-name" required placeholder="Nama Lengkap" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition">
                         </div>
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold">Jenis Sertifikat</label>
-                            <select id="cert-type" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="text-sm font-semibold text-slate-700">Jenis Sertifikat</label>
+                            <select id="cert-type" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition">
                                 <option>Kelas Menulis</option>
                                 <option>Penulis Aktif</option>
                                 <option>Juara Lomba</option>
+                                <option>Relawan KOAT</option>
                             </select>
                         </div>
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold">Tahun Terbit</label>
-                            <input type="number" id="cert-year" value="2024" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="text-sm font-semibold text-slate-700">Tahun Terbit</label>
+                            <input type="number" id="cert-year" value="2024" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition">
                         </div>
                         <div class="md:col-span-2 space-y-2">
-                            <label class="text-sm font-semibold">Keterangan Tambahan</label>
-                            <textarea id="cert-desc" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500" rows="3"></textarea>
+                            <label class="text-sm font-semibold text-slate-700">Keterangan Tambahan</label>
+                            <textarea id="cert-desc" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition" rows="3" placeholder="Opsional..."></textarea>
                         </div>
                         <div class="md:col-span-2 flex justify-center pt-4">
-                            <button type="button" onclick="generateCertQR()" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition">GENERATE QR VALIDASI</button>
+                            <button type="submit" class="w-full md:w-auto bg-blue-600 text-white px-12 py-4 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200">GENERATE QR VALIDASI</button>
                         </div>
                     </form>
 
-                    <div id="cert-result" class="mt-12 hidden border-t pt-10 text-center space-y-6">
+                    <div id="cert-result" class="mt-12 hidden border-t pt-10 text-center space-y-6 animate-pulse-once">
                         <div class="flex justify-center">
-                            <div id="cert-qrcode" class="p-4 bg-white border-4 border-blue-600 rounded-2xl"></div>
+                            <div class="p-6 bg-white border-8 border-slate-50 shadow-inner rounded-3xl">
+                                <div id="cert-qrcode"></div>
+                            </div>
                         </div>
-                        <p class="text-sm text-slate-500">QR Code ini mengarah ke sistem verifikasi resmi Sahabat KOAT.</p>
-                        <button onclick="window.print()" class="text-blue-600 font-bold underline">Cetak Lembar Validasi</button>
+                        <div class="max-w-xs mx-auto space-y-2">
+                            <p class="font-bold text-slate-800 text-lg" id="res-cert-name"></p>
+                            <p class="text-sm text-slate-500">No: <span id="res-cert-reg" class="font-mono"></span></p>
+                        </div>
+                        <p class="text-xs text-slate-400 bg-slate-50 p-3 rounded-lg">QR Code ini mengarah ke basis data verifikasi resmi Sahabat KOAT untuk menjamin keaslian dokumen.</p>
+                        <button onclick="window.print()" class="text-blue-600 font-bold flex items-center justify-center mx-auto hover:underline">
+                            <i data-lucide="printer" class="w-4 h-4 mr-2"></i> Cetak Lembar Validasi
+                        </button>
                     </div>
                 </div>
             </section>
@@ -231,91 +266,109 @@
     </main>
 
     <!-- MODAL: ADD MEMBER -->
-    <div id="member-modal" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div id="member-modal" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4 no-print">
+        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col scale-95 transition-transform duration-300">
             <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                <h4 class="text-lg font-bold" id="modal-title">Tambah Anggota Baru</h4>
-                <button onclick="closeMemberModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-6 h-6"></i></button>
+                <div class="flex items-center">
+                    <div class="p-2 bg-blue-100 text-blue-600 rounded-lg mr-3"><i data-lucide="user-plus" class="w-5 h-5"></i></div>
+                    <h4 class="text-lg font-bold" id="modal-title text-slate-800">Tambah Anggota Baru</h4>
+                </div>
+                <button onclick="closeMemberModal()" class="text-slate-400 hover:text-red-500 transition"><i data-lucide="x" class="w-6 h-6"></i></button>
             </div>
-            <div class="p-6 overflow-y-auto flex-1">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-8 overflow-y-auto flex-1">
+                <form id="member-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-1">
-                        <label class="text-xs font-bold text-slate-500">No Registrasi</label>
-                        <input type="text" class="w-full p-2 border rounded-lg" placeholder="REG/KOAT/000">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">No Registrasi</label>
+                        <input type="text" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="REG/KOAT/000">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-xs font-bold text-slate-500">Nama Lengkap</label>
-                        <input type="text" class="w-full p-2 border rounded-lg">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Lengkap</label>
+                        <input type="text" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-xs font-bold text-slate-500">Nama Pena</label>
-                        <input type="text" class="w-full p-2 border rounded-lg">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Pena</label>
+                        <input type="text" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-xs font-bold text-slate-500">Komunitas</label>
-                        <select class="w-full p-2 border rounded-lg">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Komunitas</label>
+                        <select class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
                             <option>Sabangka KOAT</option>
                             <option>Poem Squad KOAT</option>
                         </select>
                     </div>
                     <div class="space-y-1">
-                        <label class="text-xs font-bold text-slate-500">Email</label>
-                        <input type="email" class="w-full p-2 border rounded-lg">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Email Utama</label>
+                        <input type="email" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="email@contoh.com">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-xs font-bold text-slate-500">No WhatsApp</label>
-                        <input type="text" class="w-full p-2 border rounded-lg">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Nomor WhatsApp</label>
+                        <input type="text" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="08xxxx">
                     </div>
-                </div>
+                </form>
             </div>
-            <div class="p-6 border-t flex justify-end space-x-3">
-                <button onclick="closeMemberModal()" class="px-6 py-2 text-slate-600">Batal</button>
-                <button class="px-6 py-2 bg-blue-600 text-white rounded-xl font-bold">Simpan Data</button>
+            <div class="p-6 border-t bg-slate-50 flex justify-end space-x-3">
+                <button onclick="closeMemberModal()" class="px-6 py-3 text-slate-600 font-medium hover:text-slate-800 transition">Batal</button>
+                <button class="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition">SIMPAN ANGGOTA</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL: ID CARD PREVIEW -->
     <div id="idcard-modal" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-8 relative">
-            <button onclick="document.getElementById('idcard-modal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 no-print">
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl p-8 relative scale-95 transition-transform duration-300">
+            <button onclick="document.getElementById('idcard-modal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition no-print">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
             
-            <div id="idcard-content" class="border-2 rounded-2xl p-6 bg-white relative overflow-hidden">
-                <!-- ID Card Header -->
+            <div id="idcard-content" class="border rounded-2xl p-6 bg-white relative overflow-hidden shadow-sm">
+                <!-- Card BG Decoration -->
                 <div id="card-header-bg" class="absolute top-0 left-0 w-full h-24 card-gradient-blue"></div>
                 
                 <div class="relative z-10 flex flex-col items-center pt-8">
-                    <div class="w-24 h-24 rounded-full border-4 border-white bg-slate-200 overflow-hidden mb-4">
+                    <div class="w-28 h-28 rounded-full border-4 border-white bg-white shadow-md overflow-hidden mb-4">
                         <img id="card-photo" src="https://ui-avatars.com/api/?name=Member&background=random" class="w-full h-full object-cover">
                     </div>
-                    <h3 id="card-name" class="text-xl font-bold text-slate-800">Nama Anggota</h3>
-                    <p id="card-reg" class="text-sm text-slate-500 font-medium uppercase tracking-widest">REG/KOAT/2024/001</p>
+                    <h3 id="card-name" class="text-xl font-bold text-slate-800 text-center">Nama Anggota</h3>
+                    <p id="card-reg" class="text-xs text-slate-400 font-bold uppercase tracking-[0.2em] mt-1">REG/KOAT/2024/001</p>
                     
-                    <div class="my-6 p-3 bg-white border-2 rounded-xl">
+                    <div class="my-6 p-4 bg-white border-2 border-slate-50 rounded-2xl shadow-inner">
                         <div id="card-qrcode"></div>
                     </div>
                     
-                    <div class="w-full space-y-2 text-xs border-t pt-4">
-                        <div class="flex justify-between"><span class="text-slate-400 uppercase">Bergabung</span> <span id="card-year" class="font-bold">2023</span></div>
-                        <div class="flex justify-between"><span class="text-slate-400 uppercase">Komunitas</span> <span id="card-comm" class="font-bold">Sabangka KOAT</span></div>
-                        <div class="flex justify-between"><span class="text-slate-400 uppercase">Status</span> <span class="bg-green-100 text-green-600 px-2 rounded-full font-bold">AKTIF</span></div>
+                    <div class="w-full grid grid-cols-2 gap-4 border-t pt-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        <div class="text-center">
+                            <p>Member Since</p>
+                            <p id="card-year" class="text-slate-800 text-sm">2023</p>
+                        </div>
+                        <div class="text-center">
+                            <p>Community</p>
+                            <p id="card-comm" class="text-slate-800 text-sm">Sabangka</p>
+                        </div>
+                        <div class="col-span-2 text-center mt-2">
+                            <span class="inline-block px-4 py-1 bg-green-100 text-green-600 rounded-full text-[9px] border border-green-200">ACTIVE MEMBER</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-6 flex space-x-3 no-print">
-                <button onclick="window.print()" class="flex-1 bg-slate-800 text-white py-3 rounded-xl font-bold">Cetak Kartu</button>
-                <button class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold">Download PDF</button>
+            <div class="mt-8 grid grid-cols-2 gap-4 no-print">
+                <button onclick="window.print()" class="bg-slate-900 text-white py-4 rounded-2xl font-bold flex items-center justify-center hover:bg-black transition">
+                    <i data-lucide="printer" class="w-4 h-4 mr-2"></i> Print Card
+                </button>
+                <button class="bg-blue-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center hover:bg-blue-700 transition">
+                    <i data-lucide="download" class="w-4 h-4 mr-2"></i> Save PDF
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        // Fungsi pembantu untuk menginisialisasi Lucide dengan aman
+        // Global variables
+        let growthChart;
+
+        // Secure Lucide initialization
         function refreshIcons() {
-            if (typeof lucide !== 'undefined') {
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
                 lucide.createIcons();
             }
         }
@@ -326,29 +379,34 @@
             { id: '2', reg: 'POE/KOAT/22/012', name: 'Siti Aminah', nick: 'Amii', comm: 'Poem Squad KOAT', year: 2022, status: 'Aktif' },
             { id: '3', reg: 'SAB/KOAT/21/045', name: 'Budi Santoso', nick: 'San Budi', comm: 'Sabangka KOAT', year: 2021, status: 'Alumni' },
             { id: '4', reg: 'POE/KOAT/23/088', name: 'Lia Kartika', nick: 'Lia K.', comm: 'Poem Squad KOAT', year: 2023, status: 'Aktif' },
+            { id: '5', reg: 'SAB/KOAT/24/002', name: 'Dewi Rahayu', nick: 'Dewi', comm: 'Sabangka KOAT', year: 2024, status: 'Aktif' }
         ];
 
         const karyaData = [
             { id: 'K001', title: 'Senja di Ujung Kota', type: 'Puisi', author: 'Ahmad Faisal', comm: 'Sabangka', year: 2023 },
             { id: 'K002', title: 'Manifesto Jiwa Merdeka', type: 'Esai', author: 'Siti Aminah', comm: 'Poem Squad', year: 2024 },
             { id: 'K003', title: 'Hujan di Bulan Juni', type: 'Puisi', author: 'Lia Kartika', comm: 'Poem Squad', year: 2023 },
+            { id: 'K004', title: 'Lembayung Kehidupan', type: 'Cerpen', author: 'Dewi Rahayu', comm: 'Sabangka', year: 2024 }
         ];
 
         let currentActiveComm = 'all';
 
-        // Page Switcher
+        // Page Routing System
         function switchPage(page) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('sidebar-active'));
             
+            const contentContainer = document.getElementById('content-container');
+            contentContainer.scrollTo(0, 0);
+
             if (page === 'sabangka') {
                 document.getElementById('page-members').classList.remove('hidden');
-                document.getElementById('member-title').innerText = 'Data Anggota Sabangka KOAT';
+                document.getElementById('member-title').innerText = 'Database Sabangka KOAT';
                 currentActiveComm = 'Sabangka KOAT';
                 renderMembers();
             } else if (page === 'poem') {
                 document.getElementById('page-members').classList.remove('hidden');
-                document.getElementById('member-title').innerText = 'Data Anggota Poem Squad KOAT';
+                document.getElementById('member-title').innerText = 'Database Poem Squad KOAT';
                 currentActiveComm = 'Poem Squad KOAT';
                 renderMembers();
             } else {
@@ -356,15 +414,18 @@
                 if (targetPage) targetPage.classList.remove('hidden');
             }
 
-            document.getElementById('page-title').innerText = page.charAt(0).toUpperCase() + page.slice(1);
+            document.getElementById('page-title').innerText = (page === 'sabangka' || page === 'poem') ? 'Manajemen Anggota' : page.charAt(0).toUpperCase() + page.slice(1);
+            
             const navBtn = document.getElementById('nav-' + page);
             if (navBtn) navBtn.classList.add('sidebar-active');
 
             if (page === 'karya') renderKarya();
+            if (page === 'dashboard' && !growthChart) initChart();
+            
             refreshIcons();
         }
 
-        // Render Members Table
+        // Render Table
         function renderMembers() {
             const tbody = document.getElementById('member-table-body');
             tbody.innerHTML = '';
@@ -372,66 +433,79 @@
             const filtered = membersData.filter(m => m.comm === currentActiveComm);
             
             filtered.forEach(m => {
-                const row = `
-                    <tr class="border-b hover:bg-slate-50 transition">
-                        <td class="px-6 py-4">
-                            <p class="font-bold text-slate-800">${m.id}</p>
-                            <p class="text-xs text-slate-500">${m.reg}</p>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 rounded-full bg-slate-200"></div>
-                                <div>
-                                    <p class="font-semibold">${m.name}</p>
-                                    <p class="text-xs text-slate-400">Pena: ${m.nick}</p>
-                                </div>
+                const row = document.createElement('tr');
+                row.className = "hover:bg-slate-50 transition-colors group";
+                row.innerHTML = `
+                    <td class="px-6 py-4">
+                        <p class="font-bold text-slate-800">${m.id.padStart(3, '0')}</p>
+                        <p class="text-[10px] text-slate-400 font-mono">${m.reg}</p>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center font-bold text-blue-600 text-xs">
+                                ${m.name.split(' ').map(n => n[0]).join('')}
                             </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="px-3 py-1 rounded-full text-xs font-bold ${m.status === 'Aktif' ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-600'}">${m.status}</span>
-                        </td>
-                        <td class="px-6 py-4 text-slate-600 font-medium">${m.year}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex space-x-2">
-                                <button onclick="previewIDCard('${m.id}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><i data-lucide="qr-code" class="w-4 h-4"></i></button>
-                                <button class="p-2 text-slate-400 hover:bg-slate-50 rounded-lg"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                                <button class="p-2 text-red-600 hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            <div>
+                                <p class="font-bold text-slate-700">${m.name}</p>
+                                <p class="text-xs text-slate-400 italic">Pena: ${m.nick}</p>
                             </div>
-                        </td>
-                    </tr>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${m.status === 'Aktif' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}">
+                            <span class="w-1 h-1 rounded-full mr-1.5 ${m.status === 'Aktif' ? 'bg-green-500' : 'bg-slate-400'}"></span>
+                            ${m.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-slate-600 font-medium text-sm">${m.year}</td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex justify-end space-x-1">
+                            <button onclick="previewIDCard('${m.id}')" title="Lihat Kartu" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition">
+                                <i data-lucide="id-card" class="w-4 h-4"></i>
+                            </button>
+                            <button class="p-2 text-slate-400 hover:bg-slate-100 rounded-xl transition">
+                                <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </td>
                 `;
-                tbody.innerHTML += row;
+                tbody.appendChild(row);
             });
             refreshIcons();
         }
 
-        // Render Karya Grid
+        // Render Karya
         function renderKarya() {
             const grid = document.getElementById('karya-grid');
             if (!grid) return;
             grid.innerHTML = '';
             
             karyaData.forEach(k => {
-                const card = `
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border hover:shadow-md transition cursor-pointer">
+                grid.innerHTML += `
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border group hover:border-blue-300 transition-all duration-300 hover:shadow-xl hover:shadow-blue-50">
                         <div class="flex justify-between items-start mb-4">
-                            <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-xs font-bold">${k.type}</span>
-                            <span class="text-xs text-slate-400">${k.year}</span>
+                            <span class="px-3 py-1 bg-slate-100 text-slate-600 group-hover:bg-blue-600 group-hover:text-white transition rounded-lg text-[10px] font-black uppercase">${k.type}</span>
+                            <div class="flex -space-x-2">
+                                <div class="w-6 h-6 rounded-full border-2 border-white bg-slate-200"></div>
+                            </div>
                         </div>
-                        <h4 class="font-bold text-lg text-slate-800 mb-2">${k.title}</h4>
-                        <p class="text-sm text-slate-500 mb-4">Ditulis oleh <span class="text-slate-800 font-medium">${k.author}</span></p>
-                        <div class="pt-4 border-t flex justify-between items-center">
-                            <span class="text-xs font-bold text-slate-400">${k.comm}</span>
-                            <button class="text-blue-600 text-sm font-bold flex items-center">Baca Karya <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i></button>
+                        <h4 class="font-bold text-lg text-slate-800 mb-2 line-clamp-1">${k.title}</h4>
+                        <p class="text-xs text-slate-500 mb-6">Penulis: <span class="text-slate-900 font-bold">${k.author}</span></p>
+                        <div class="pt-4 border-t border-slate-50 flex justify-between items-center">
+                            <div class="flex items-center text-[10px] font-bold text-slate-400 uppercase">
+                                <i data-lucide="layers" class="w-3 h-3 mr-1"></i> ${k.comm}
+                            </div>
+                            <button class="w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 rounded-full group-hover:bg-blue-50 group-hover:text-blue-600 transition">
+                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </button>
                         </div>
                     </div>
                 `;
-                grid.innerHTML += card;
             });
             refreshIcons();
         }
 
-        // ID Card Modal Logic
+        // ID Card
         function previewIDCard(memberId) {
             const m = membersData.find(x => x.id === memberId);
             if (!m) return;
@@ -439,66 +513,73 @@
             document.getElementById('card-name').innerText = m.name;
             document.getElementById('card-reg').innerText = m.reg;
             document.getElementById('card-year').innerText = m.year;
-            document.getElementById('card-comm').innerText = m.comm;
+            document.getElementById('card-comm').innerText = m.comm.split(' ')[0];
             
             const header = document.getElementById('card-header-bg');
-            if(m.comm.includes('Poem')) {
-                header.className = 'absolute top-0 left-0 w-full h-24 card-gradient-purple';
-            } else {
-                header.className = 'absolute top-0 left-0 w-full h-24 card-gradient-blue';
-            }
+            header.className = m.comm.includes('Poem') 
+                ? 'absolute top-0 left-0 w-full h-24 card-gradient-purple' 
+                : 'absolute top-0 left-0 w-full h-24 card-gradient-blue';
 
             const qrContainer = document.getElementById('card-qrcode');
             qrContainer.innerHTML = '';
             if (typeof QRCode !== 'undefined') {
                 new QRCode(qrContainer, {
-                    text: `https://sahabatkoat.id/verify/${m.reg}`,
-                    width: 100,
-                    height: 100
+                    text: `https://sahabatkoat.id/v/${m.reg.replace(/\//g, '-')}`,
+                    width: 120,
+                    height: 120,
+                    correctLevel: QRCode.CorrectLevel.H
                 });
             }
 
-            document.getElementById('idcard-modal').classList.remove('hidden');
+            const modal = document.getElementById('idcard-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.querySelector('div').classList.remove('scale-95'), 10);
             refreshIcons();
         }
 
-        // Certificate QR Logic
+        // Cert QR
         function generateCertQR() {
             const reg = document.getElementById('cert-reg').value;
             const name = document.getElementById('cert-name').value;
-            if(!reg || !name) {
-                alert("Mohon lengkapi data sertifikat");
-                return;
-            }
+            
+            document.getElementById('res-cert-name').innerText = name;
+            document.getElementById('res-cert-reg').innerText = reg;
 
             const qrContainer = document.getElementById('cert-qrcode');
             qrContainer.innerHTML = '';
             if (typeof QRCode !== 'undefined') {
                 new QRCode(qrContainer, {
-                    text: `https://sahabatkoat.id/verify-cert/${reg}`,
-                    width: 200,
-                    height: 200,
-                    colorDark: "#1d4ed8"
+                    text: `VALID:KOAT:${reg}:${name}`,
+                    width: 180,
+                    height: 180,
+                    colorDark: "#0f172a",
+                    colorLight: "#ffffff"
                 });
             }
 
-            document.getElementById('cert-result').classList.remove('hidden');
+            const result = document.getElementById('cert-result');
+            result.classList.remove('hidden');
+            result.scrollIntoView({ behavior: 'smooth' });
+            refreshIcons();
         }
 
+        // Modal
         function openAddMemberModal() {
-            document.getElementById('member-modal').classList.remove('hidden');
+            const modal = document.getElementById('member-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.querySelector('div').classList.remove('scale-95'), 10);
             refreshIcons();
         }
         function closeMemberModal() {
-            document.getElementById('member-modal').classList.add('hidden');
+            const modal = document.getElementById('member-modal');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 200);
         }
 
-        // Initialize Growth Chart
+        // Chart
         function initChart() {
-            const canvas = document.getElementById('growthChart');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            new Chart(ctx, {
+            const ctx = document.getElementById('growthChart').getContext('2d');
+            growthChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
@@ -507,34 +588,48 @@
                             label: 'Sabangka',
                             data: [65, 78, 90, 110, 115, 124],
                             borderColor: '#3b82f6',
+                            borderWidth: 3,
                             tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#fff',
                             fill: true,
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)'
+                            backgroundColor: 'rgba(59, 130, 246, 0.05)'
                         },
                         {
                             label: 'Poem Squad',
                             data: [40, 45, 52, 68, 75, 86],
-                            borderColor: '#8b5cf6',
+                            borderColor: '#a855f7',
+                            borderWidth: 3,
                             tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#fff',
                             fill: true,
-                            backgroundColor: 'rgba(139, 92, 246, 0.1)'
+                            backgroundColor: 'rgba(168, 85, 247, 0.05)'
                         }
                     ]
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { position: 'bottom' } },
-                    scales: { y: { beginAtZero: true } }
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 6, font: { weight: 'bold' } } },
+                        tooltip: { backgroundColor: '#1e293b', padding: 12, borderRadius: 12 }
+                    },
+                    scales: { 
+                        y: { beginAtZero: true, grid: { drawBorder: false, color: '#f1f5f9' }, ticks: { font: { size: 10 } } },
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                    }
                 }
             });
         }
 
-        // Recent Activity Feed
+        // Activities
         function loadActivity() {
             const activities = [
-                { user: 'Admin', act: 'Menambah anggota baru', time: '2 Jam lalu', type: 'plus' },
-                { user: 'Faisal A.', act: 'Upload karya baru: Senja...', time: '5 Jam lalu', type: 'file-text' },
-                { user: 'System', act: 'Generate 5 QR Sertifikat', time: '1 Hari lalu', type: 'award' }
+                { user: 'Admin KOAT', act: 'Verifikasi Anggota Baru', time: '10 Menit lalu', type: 'user-check', color: 'bg-green-100 text-green-600' },
+                { user: 'Siti Aminah', act: 'Upload Puisi: Manifesto Jiwa', time: '2 Jam lalu', type: 'file-text', color: 'bg-purple-100 text-purple-600' },
+                { user: 'System', act: 'Pembaruan Database Bulanan', time: '5 Jam lalu', type: 'refresh-cw', color: 'bg-blue-100 text-blue-600' },
+                { user: 'Admin KOAT', act: 'Cetak 12 Kartu Anggota', time: 'Kemarin', type: 'printer', color: 'bg-slate-100 text-slate-600' }
             ];
             
             const container = document.getElementById('recent-activity');
@@ -542,11 +637,14 @@
             container.innerHTML = '';
             activities.forEach(a => {
                 container.innerHTML += `
-                    <div class="flex items-start space-x-3 p-2 hover:bg-slate-50 rounded-lg transition">
-                        <div class="w-8 h-8 rounded bg-slate-100 flex items-center justify-center"><i data-lucide="${a.type}" class="w-4 h-4 text-slate-500"></i></div>
-                        <div>
-                            <p class="text-sm font-medium text-slate-800">${a.user} <span class="font-normal text-slate-500">${a.act}</span></p>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${a.time}</p>
+                    <div class="flex items-start space-x-3 group cursor-default">
+                        <div class="w-10 h-10 rounded-xl ${a.color} flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <i data-lucide="${a.type}" class="w-5 h-5"></i>
+                        </div>
+                        <div class="flex-1 overflow-hidden">
+                            <p class="text-sm font-bold text-slate-800 truncate">${a.user}</p>
+                            <p class="text-xs text-slate-500">${a.act}</p>
+                            <p class="text-[10px] text-slate-400 mt-1 uppercase font-black tracking-widest">${a.time}</p>
                         </div>
                     </div>
                 `;
@@ -554,13 +652,28 @@
             refreshIcons();
         }
 
-        // Jalankan saat DOM siap
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('current-date').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            initChart();
+        // App Initialization
+        window.addEventListener('load', () => {
+            // Set Date
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').innerText = now.toLocaleDateString('id-ID', options);
+            
+            // Start components
             loadActivity();
             switchPage('dashboard');
+            
+            // Global refresh for icons just in case
+            setTimeout(refreshIcons, 500);
         });
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const memberModal = document.getElementById('member-modal');
+            const idcardModal = document.getElementById('idcard-modal');
+            if (event.target == memberModal) closeMemberModal();
+            if (event.target == idcardModal) idcardModal.classList.add('hidden');
+        }
     </script>
 </body>
 </html>
